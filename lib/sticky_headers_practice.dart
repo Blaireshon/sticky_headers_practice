@@ -1,9 +1,5 @@
 import 'dart:async';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:sticky_headers_practice/controller.dart';
 
 /// 좌우 상하 스크롤 테이블
 /// required int [columnLength] 테이블 컬럼 개수
