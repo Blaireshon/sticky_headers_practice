@@ -47,8 +47,8 @@ class MakeTable extends StatefulWidget {
   final Widget Function(int columnIndex) columnHeaderBuilder;
   final Widget Function(int rowIndex) rowHeaderBuilder;
   final List<List<String>> cellData;
-  //final Widget Function(int columnIndex, int rowIndex) cellData;
 
+  //final Widget Function(int columnIndex, int rowIndex) cellData;
   final Widget indexCell;
   final double columnHeaderWidth;
   final double rowHeaderHeight;
@@ -77,17 +77,18 @@ class _MakeTableState extends State<MakeTable> {
   // horizontal data scroll controller
   final ScrollController _horizontalController = ScrollController();
 
-  /// 동기화 된 스크롤을 관리하기 위한 싱크스크롤컨트롤러
-  //SyncScrollController(
-  //     this._headerController,
-  //     this._dataController,
-  //   );
-
   // rowheader 스크롤과 data 수직 스크롤 동기화
-  late SyncScrollController _verticalSyncController;
+  late final SyncScrollController _verticalSyncController  = SyncScrollController(
+      _verticalHeaderController,
+      _verticalController,
+      );
 
   // columnheader 스크롤과 data 수평 스크롤 동기화
-  late SyncScrollController _horizontalSyncController;
+  late final SyncScrollController _horizontalSyncController = SyncScrollController(
+    _horizontalHeadercontroller,
+    _horizontalController,
+  );
+
 
   /// 데이터 update
   /// [rowIdx] update될 값의 row 위치
@@ -126,7 +127,7 @@ class _MakeTableState extends State<MakeTable> {
     });
 
     /// update된 값의 border가 500ms 동안 활성화 됨
-    borderTimer = Timer(Duration(milliseconds: 500), () {
+    borderTimer = Timer(const Duration(milliseconds: 500), () {
       setState(() {
         cellBorders[rowIdx][columnIdx] = false;
       });
@@ -135,18 +136,17 @@ class _MakeTableState extends State<MakeTable> {
 
   @override
   Widget build(BuildContext context) {
-
     /// 수직 스크롤 동기화 컨트롤러
-    _verticalSyncController = SyncScrollController(
-      _verticalHeaderController,
-      _verticalController,
-    );
-
-    /// 수평 스크롤 동기화 컨트롤러
-    _horizontalSyncController = SyncScrollController(
-      _horizontalHeadercontroller,
-      _horizontalController,
-    );
+    //_verticalSyncController = SyncScrollController(
+    //   _verticalHeaderController,
+    //   _verticalController,
+    // );
+    //
+    // /// 수평 스크롤 동기화 컨트롤러
+    // _horizontalSyncController = SyncScrollController(
+    //   _horizontalHeadercontroller,
+    //   _horizontalController,
+    // );
     return Column(
       children: <Widget>[
         Row(
@@ -174,37 +174,42 @@ class _MakeTableState extends State<MakeTable> {
             ),
 
             /// column header
+            ///
             Expanded(
-                child: NotificationListener<ScrollNotification>(
-                    child: Scrollbar(
-                      controller: _horizontalController,
-                      child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          controller: _horizontalHeadercontroller,
-                          child: Row(
-                            children: List.generate(
-                                widget.columnLength,
-                                (i) => Container(
-                                      decoration: const BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            color: Colors.black26, // border 색상
-                                            width: 1.0, // border 두께
-                                            style:
-                                                BorderStyle.solid, // border 스타일
+                child: Container(
+                  height: 50,
+                  child: NotificationListener<ScrollNotification>(
+                      child: Scrollbar(
+                        controller: _horizontalController,
+                        child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            controller: _horizontalHeadercontroller,
+                            child: Row(
+                              children: List.generate(
+                                  widget.columnLength,
+                                  (i) => Container(
+                                        decoration: const BoxDecoration(
+                                          border: Border(
+                                            bottom: BorderSide(
+                                              color: Colors.black26, // border 색상
+                                              width: 1.0, // border 두께
+                                              style:
+                                                  BorderStyle.solid, // border 스타일
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      width: widget.columnHeaderWidth,
-                                      height: widget.indexHeight,
-                                      alignment: Alignment.center,
-                                      child: widget.columnHeaderBuilder(i),
-                                    )),
-                          )),
-                    ),
-                    onNotification: (ScrollNotification scrollInfo) =>
-                        (_horizontalSyncController.processNotification(
-                            scrollInfo, _horizontalHeadercontroller))))
+                                        width: widget.columnHeaderWidth,
+                                        height: widget.indexHeight,
+                                        alignment: Alignment.center,
+                                        child: widget.columnHeaderBuilder(i),
+                                      )),
+                            )),
+
+                      ),
+                      onNotification: (ScrollNotification scrollInfo) =>
+                          (_horizontalSyncController.processNotification(
+                              scrollInfo, _horizontalHeadercontroller))),
+                ))
           ],
         ),
         Expanded(
@@ -217,6 +222,8 @@ class _MakeTableState extends State<MakeTable> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     controller: _verticalHeaderController,
+
+
                     child: Column(
                       children: List.generate(
                           widget.rowLength,
@@ -242,9 +249,8 @@ class _MakeTableState extends State<MakeTable> {
                     (_verticalSyncController.processNotification(
                         scrollInfo, _verticalHeaderController))),
 
+            ///data영역
             Expanded(
-
-                /// data 영역
                 child: NotificationListener<ScrollNotification>(
                     child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -285,8 +291,9 @@ class _MakeTableState extends State<MakeTable> {
                                     scrollInfo, _verticalController)))),
                     onNotification: (ScrollNotification scrollInfo) =>
                         (_horizontalSyncController.processNotification(
-                            scrollInfo, _horizontalController))))
-          ],
+                            scrollInfo, _horizontalController)))
+            ),
+    ],
         ))
       ],
     );
@@ -349,4 +356,5 @@ class SyncScrollController {
     }
     return false;
   }
+
 }
